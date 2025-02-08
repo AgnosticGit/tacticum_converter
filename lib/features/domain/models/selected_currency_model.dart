@@ -16,7 +16,11 @@ class SelectedCurrencyModel {
   String code;
   double? amount;
 
-  String get amountString => amount != null ? amount!.toStringAsPrecision(3) : "";
+  String get amountString => amount != null
+      ? amount! < 0.01
+          ? amount!.toStringAsPrecision(3)
+          : amount!.toStringAsFixed(3)
+      : "";
 
   SelectedCurrencyModel copyWith({String? code, double? amount}) {
     return SelectedCurrencyModel(
