@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:tacticum_converter/core/constants/currency_flags/currency_flags.dart';
-import 'package:tacticum_converter/features/data/repositories/converter_repository_impl.dart';
+import 'package:tacticum_converter/features/data/repositories/api/converter_repository_impl.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/converter_controller.dart';
 
 class CurrencyExchangeInjection {

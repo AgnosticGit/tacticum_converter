@@ -17,6 +17,9 @@ class TacticumConverter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white, 
+      ),
       initialRoute: Navigation.initial,
       scaffoldMessengerKey: snackbarKey,
       getPages: Navigation.pages,

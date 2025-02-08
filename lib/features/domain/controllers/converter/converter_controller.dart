@@ -1,5 +1,6 @@
 import 'package:tacticum_converter/features/domain/controllers/abstracts/controller.dart';
 import 'package:tacticum_converter/features/domain/models/exchange_rate_model.dart';
+import 'package:tacticum_converter/features/domain/models/selected_currency_model.dart';
 import 'package:tacticum_converter/features/domain/repositories/converter_repository.dart';
 
 class ConverterController extends Controller {
@@ -10,14 +11,10 @@ class ConverterController extends Controller {
   List<String> availableCurrencyCodes = [];
   ExchangeRateModel? exchangeRateModel;
 
-  String? firstSelected;
-  String? secondSelected;
-  double? _firstAmount;
-  double? _secondAmount;
-  double ratio = 1.0;
+  SelectedCurrencyModel? first;
+  SelectedCurrencyModel? second;
 
-  String get firstAmount => _firstAmount != null ? _firstAmount!.toStringAsPrecision(3) : "";
-  String get secondAmount => _secondAmount != null ? _secondAmount!.toStringAsPrecision(3) : "";
+  double ratio = 1.0;
 
   Future<void> loadCurrencyCodes() async {
     loadingStarted();
@@ -26,10 +23,9 @@ class ConverterController extends Controller {
 
     if (lor.isRight) {
       availableCurrencyCodes = lor.right.map((e) => e.toUpperCase()).toList();
-      firstSelected = 'USD';
-      secondSelected = 'EUR';
-      await _getExchangeRate(firstSelected!);
-      setAmounts();
+      first = SelectedCurrencyModel.defaultUSD();
+      second = SelectedCurrencyModel.defaultRUB()..amount = _convertFormula(first!.amount!, ratio);
+      await _getExchangeRate();
     } else {
       setFailure(lor.left);
     }
@@ -37,14 +33,8 @@ class ConverterController extends Controller {
     loadingFinished();
   }
 
-  void setAmounts() {
-    _firstAmount = 1.0;
-    _secondAmount = _convertFormula(_firstAmount!, ratio);
-    update();
-  }
-
-  Future<void> _getExchangeRate(String code) async {
-    final lor = await converterRepository.exchangeRate(code, "2025-01-01");
+  Future<void> _getExchangeRate() async {
+    final lor = await converterRepository.exchangeRate(first!.code, "2024-05-05");
 
     if (lor.isRight) {
       exchangeRateModel = lor.right;
@@ -55,43 +45,47 @@ class ConverterController extends Controller {
   }
 
   Future<void> selectFirstCurrency(String? value) async {
-    firstSelected = value;
+    if (value == null) return;
+
+    first!.code = value;
     update();
-    await updateAmounts(value);
+    await updateAmounts(first);
   }
 
   Future<void> selectSecondCurrency(String? value) async {
-    secondSelected = value;
+    if (value == null) return;
+
+    second!.code = value;
     update();
-    await updateAmounts(value);
+    await updateAmounts(second);
   }
 
-  Future<void> updateAmounts(String? value) async {
+  Future<void> updateAmounts(SelectedCurrencyModel? value) async {
     if (value != null) {
-      await _getExchangeRate(value);
-      _secondAmount = _convertFormula(_firstAmount!, ratio);
+      await _getExchangeRate();
+      second!.amount = _convertFormula(first!.amount!, ratio);
     }
   }
 
   Future<void> swapCurrencies() async {
-    final firstSelectedCash = firstSelected;
-    firstSelected = secondSelected;
-    secondSelected = firstSelectedCash;
+    final firstSelectedCopy = first!.code;
+    first!.code = second!.code;
+    second!.code = firstSelectedCopy;
     update();
 
-    await updateAmounts(firstSelected);
+    await updateAmounts(first!);
     update();
   }
 
   void setFirstAmount(String value) {
-    _firstAmount = double.tryParse(value);
-    _secondAmount = _firstAmount == null ? null : _convertFormula(_firstAmount!, ratio);
+    first!.amount = double.tryParse(value);
+    second!.amount = first?.amount == null ? null : _convertFormula(first!.amount!, ratio);
     update();
   }
 
   void setSecondAmount(String value) {
-    _secondAmount = double.tryParse(value);
-    _firstAmount = _secondAmount == null ? null : _convertFormula(_secondAmount!, ratio);
+    second!.amount = double.tryParse(value);
+    first!.amount = second?.amount == null ? null : _convertFormula(second!.amount!, ratio);
     update();
   }
 
@@ -102,11 +96,12 @@ class ConverterController extends Controller {
   void setRatio() {
     if (exchangeRateModel == null) return;
 
-    if (exchangeRateModel!.code == firstSelected) {
-      ratio = exchangeRateModel!.rates[secondSelected!.toLowerCase()];
+    if (exchangeRateModel!.code == first!.code) {
+      ratio = exchangeRateModel!.rates[second!.code.toLowerCase()];
     } else {
-      ratio = exchangeRateModel!.rates[firstSelected!.toLowerCase()];
+      ratio = exchangeRateModel!.rates[first!.code.toLowerCase()];
     }
+
     update();
   }
 }

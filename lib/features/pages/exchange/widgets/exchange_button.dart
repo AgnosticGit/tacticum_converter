@@ -25,7 +25,7 @@ class ExchangeButton extends StatelessWidget {
       onPressed: () async {
         final controller = Get.find<ConverterController>();
         await controller.swapCurrencies();
-        secondFieldController.text = controller.secondAmount;
+        secondFieldController.text = controller.second!.amountString;
       },
       child: SizedBox(
         width: 22,

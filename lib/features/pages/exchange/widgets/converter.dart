@@ -41,8 +41,8 @@ class _ConverterState extends State<Converter> {
         continue;
       }
 
-      firstFieldController.text = controller.firstAmount.toString();
-      onChangeFirstAmount(controller.firstAmount.toString());
+      firstFieldController.text = controller.first!.amountString;
+      onChangeFirstAmount(controller.first!.amountString);
       break;
     }
   }
@@ -55,6 +55,14 @@ class _ConverterState extends State<Converter> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                spreadRadius: 3,
+                blurRadius: 3,
+                offset: Offset(0, 3),
+              ),
+            ],
             borderRadius: BorderRadius.circular(12),
             color: Colors.white,
           ),
@@ -66,11 +74,11 @@ class _ConverterState extends State<Converter> {
               Row(
                 children: [
                   CurrencySelector(
-                    selectedCurrency: controller.firstSelected,
+                    selectedCurrency: controller.first?.code,
                     availableCurrencyCodes: controller.availableCurrencyCodes,
                     onSelected: (value) async {
                       await controller.selectFirstCurrency(value);
-                      secondFieldController.text = controller.secondAmount;
+                      secondFieldController.text = controller.second!.amountString;
                     },
                   ),
                   Spacer(flex: 1),
@@ -98,11 +106,11 @@ class _ConverterState extends State<Converter> {
               Row(
                 children: [
                   CurrencySelector(
-                    selectedCurrency: controller.secondSelected,
+                    selectedCurrency: controller.second?.code,
                     availableCurrencyCodes: controller.availableCurrencyCodes,
                     onSelected: (value) async {
                       await controller.selectSecondCurrency(value);
-                      secondFieldController.text = controller.secondAmount;
+                      secondFieldController.text = controller.second!.amountString;
                     },
                   ),
                   Spacer(flex: 1),
@@ -128,7 +136,7 @@ class _ConverterState extends State<Converter> {
 
     controller.setFirstAmount(value);
     secondFieldController.value = TextEditingValue(
-      text: controller.secondAmount,
+      text: controller.second!.amountString,
       selection: TextSelection.collapsed(offset: value.length),
     );
   }
@@ -138,7 +146,7 @@ class _ConverterState extends State<Converter> {
 
     controller.setSecondAmount(value);
     firstFieldController.value = TextEditingValue(
-      text: controller.firstAmount,
+      text: controller.first!.amountString,
       selection: TextSelection.collapsed(offset: value.length),
     );
   }
@@ -146,7 +154,8 @@ class _ConverterState extends State<Converter> {
   void onUnfocus() {
     final controller = Get.find<ConverterController>();
     final isUnfocus = !firstFieldFocusNode.hasFocus || !secondFieldFocusNode.hasFocus;
-    final someAmountIsEmpty = controller.firstAmount.isEmpty || controller.secondAmount.isEmpty;
+    final someAmountIsEmpty =
+        controller.first!.amountString.isEmpty || controller.second!.amountString.isEmpty;
 
     if (isUnfocus && someAmountIsEmpty) {
       firstFieldController.text = firstFieldDefaultValue;
