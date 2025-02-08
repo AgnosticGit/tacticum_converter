@@ -6,16 +6,19 @@ import 'package:tacticum_converter/core/navigation/navigation.dart';
 void main() {
   CurrencyExchangeInjection.inject();
 
-  runApp(const MyApp());
+  runApp(const TacticumConverter());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TacticumConverter extends StatelessWidget {
+  const TacticumConverter({super.key});
+
+  static final snackbarKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       initialRoute: Navigation.initial,
+      scaffoldMessengerKey: snackbarKey,
       getPages: Navigation.pages,
     );
   }

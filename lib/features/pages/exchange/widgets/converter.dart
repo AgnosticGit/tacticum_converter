@@ -1,159 +1,164 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:tacticum_converter/core/assets/assets.gen.dart';
+import 'package:tacticum_converter/core/ui_kit/snackbar_text_message.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/converter_controller.dart';
 import 'package:tacticum_converter/features/pages/exchange/widgets/currency_selector.dart';
+import 'package:tacticum_converter/features/pages/exchange/widgets/exchange_button.dart';
+import 'amount_text_field.dart';
 
-class Converter extends StatelessWidget {
+class Converter extends StatefulWidget {
   const Converter({super.key});
 
-  
+  @override
+  State<Converter> createState() => _ConverterState();
+}
+
+class _ConverterState extends State<Converter> {
+  final firstFieldController = TextEditingController();
+  final firstFieldFocusNode = FocusNode();
+
+  final secondFieldController = TextEditingController();
+  final secondFieldFocusNode = FocusNode();
+
+  static const firstFieldDefaultValue = "1.0";
+
+  @override
+  void initState() {
+    firstFieldFocusNode.addListener(onUnfocus);
+    secondFieldFocusNode.addListener(onUnfocus);
+    WidgetsBinding.instance.addPostFrameCallback((_) => onLoad());
+    super.initState();
+  }
+
+  /// Повторяет попытку загрузки пока не получит данные
+  Future<void> onLoad() async {
+    while (true) {
+      final controller = Get.find<ConverterController>();
+      await controller.loadCurrencyCodes();
+
+      if (controller.hasFailure) {
+        SnackbarTextMessage.showError(Get.context!, controller.failure!.message);
+        continue;
+      }
+
+      firstFieldController.text = controller.firstAmount.toString();
+      onChangeFirstAmount(controller.firstAmount.toString());
+      break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Amount'),
-          const SizedBox(height: 16),
-          GetBuilder<ConverterController>(
-            builder: (controller) {
-              return Row(
+    return GetBuilder<ConverterController>(builder: (controller) {
+      return AbsorbPointer(
+        absorbing: controller.isLoading,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Amount'),
+              const SizedBox(height: 16),
+              Row(
                 children: [
                   CurrencySelector(
                     selectedCurrency: controller.firstSelected,
                     availableCurrencyCodes: controller.availableCurrencyCodes,
-                    onSelected: controller.selectFirstCurrency,
+                    onSelected: (value) async {
+                      await controller.selectFirstCurrency(value);
+                      secondFieldController.text = controller.secondAmount;
+                    },
                   ),
                   Spacer(flex: 1),
                   Expanded(
                     flex: 2,
-                    child: _AmountTextField(
-                      amount: controller.firstAmount,
-                      onChange: controller.setFirstAmount,
+                    child: AmountTextField(
+                      controller: firstFieldController,
+                      focusNode: firstFieldFocusNode,
+                      onChange: (value) => onChangeFirstAmount(value),
                     ),
                   ),
                 ],
-              );
-            },
-          ),
-          const SizedBox(height: 20),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Divider(),
-              _ExchangeButton(),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text('Converted Amount'),
-          const SizedBox(height: 16),
-          GetBuilder<ConverterController>(
-            builder: (controller) {
-              return Row(
+              ),
+              const SizedBox(height: 20),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Divider(),
+                  ExchangeButton(secondFieldController: secondFieldController),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text('Converted Amount'),
+              const SizedBox(height: 16),
+              Row(
                 children: [
                   CurrencySelector(
                     selectedCurrency: controller.secondSelected,
                     availableCurrencyCodes: controller.availableCurrencyCodes,
-                    onSelected: controller.selectSecondCurrency,
+                    onSelected: (value) async {
+                      await controller.selectSecondCurrency(value);
+                      secondFieldController.text = controller.secondAmount;
+                    },
                   ),
                   Spacer(flex: 1),
                   Expanded(
                     flex: 2,
-                    child: _AmountTextField(
-                      amount: controller.secondAmount,
-                      onChange: controller.setFirstAmount,
+                    child: AmountTextField(
+                      controller: secondFieldController,
+                      focusNode: secondFieldFocusNode,
+                      onChange: onChangeSecondAmount,
                     ),
                   ),
                 ],
-              );
-            },
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ExchangeButton extends StatelessWidget {
-  const _ExchangeButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        overlayColor: Colors.white,
-        shape: CircleBorder(),
-        padding: EdgeInsets.all(20),
-        backgroundColor: Colors.blue[800],
-      ),
-      onPressed: () {},
-      child: SizedBox(
-        width: 22,
-        height: 22,
-        child: Assets.icons.exchange.svg(
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
         ),
-      ),
-    );
-  }
-}
-
-class _AmountTextField extends StatefulWidget {
-  _AmountTextField({
-    required this.amount,
-    required this.onChange,
-  });
-
-  final String amount;
-  final Function(String value) onChange;
-
-  @override
-  State<_AmountTextField> createState() => _AmountTextFieldState();
-}
-
-class _AmountTextFieldState extends State<_AmountTextField> {
-  final controller = TextEditingController();
-
-  @override
-  void didUpdateWidget(covariant _AmountTextField oldWidget) {
-    if (oldWidget.amount != widget.amount) {
-      controller.value = TextEditingValue(
-        text: widget.amount,
-        selection: TextSelection.collapsed(offset: widget.amount.length),
       );
-      ;
+    });
+  }
+
+  void onChangeFirstAmount(String value) {
+    final controller = Get.find<ConverterController>();
+
+    controller.setFirstAmount(value);
+    secondFieldController.value = TextEditingValue(
+      text: controller.secondAmount,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
+  }
+
+  void onChangeSecondAmount(String value) {
+    final controller = Get.find<ConverterController>();
+
+    controller.setSecondAmount(value);
+    firstFieldController.value = TextEditingValue(
+      text: controller.firstAmount,
+      selection: TextSelection.collapsed(offset: value.length),
+    );
+  }
+
+  void onUnfocus() {
+    final controller = Get.find<ConverterController>();
+    final isUnfocus = !firstFieldFocusNode.hasFocus || !secondFieldFocusNode.hasFocus;
+    final someAmountIsEmpty = controller.firstAmount.isEmpty || controller.secondAmount.isEmpty;
+
+    if (isUnfocus && someAmountIsEmpty) {
+      firstFieldController.text = firstFieldDefaultValue;
+      onChangeFirstAmount(firstFieldDefaultValue);
     }
-    super.didUpdateWidget(oldWidget);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        constraints: BoxConstraints(maxWidth: 130),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: Colors.blue[50],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: TextField(
-          controller: controller,
-          onChanged: widget.onChange,
-          textAlign: TextAlign.right,
-          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
-          decoration: InputDecoration(border: InputBorder.none),
-          keyboardType: TextInputType.number,
-        ),
-      ),
-    );
+  void dispose() {
+    firstFieldController.dispose();
+    secondFieldController.dispose();
+    firstFieldFocusNode.removeListener(onUnfocus);
+    super.dispose();
   }
 }

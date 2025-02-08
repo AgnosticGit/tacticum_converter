@@ -12,9 +12,12 @@ class ConverterController extends Controller {
 
   String? firstSelected;
   String? secondSelected;
-  String firstAmount = '1.0';
-  String secondAmount = '0.0';
+  double? _firstAmount;
+  double? _secondAmount;
   double ratio = 1.0;
+
+  String get firstAmount => _firstAmount != null ? _firstAmount!.toStringAsPrecision(3) : "";
+  String get secondAmount => _secondAmount != null ? _secondAmount!.toStringAsPrecision(3) : "";
 
   Future<void> loadCurrencyCodes() async {
     loadingStarted();
@@ -26,7 +29,7 @@ class ConverterController extends Controller {
       firstSelected = 'USD';
       secondSelected = 'EUR';
       await _getExchangeRate(firstSelected!);
-      setRatio();
+      setAmounts();
     } else {
       setFailure(lor.left);
     }
@@ -34,11 +37,18 @@ class ConverterController extends Controller {
     loadingFinished();
   }
 
+  void setAmounts() {
+    _firstAmount = 1.0;
+    _secondAmount = _convertFormula(_firstAmount!, ratio);
+    update();
+  }
+
   Future<void> _getExchangeRate(String code) async {
     final lor = await converterRepository.exchangeRate(code, "2025-01-01");
 
     if (lor.isRight) {
       exchangeRateModel = lor.right;
+      setRatio();
     } else {
       setFailure(lor.left);
     }
@@ -47,31 +57,41 @@ class ConverterController extends Controller {
   Future<void> selectFirstCurrency(String? value) async {
     firstSelected = value;
     update();
-
-    if (value != null) {
-      await _getExchangeRate(value);
-      setRatio();
-    }
+    await updateAmounts(value);
   }
 
   Future<void> selectSecondCurrency(String? value) async {
     secondSelected = value;
     update();
+    await updateAmounts(value);
+  }
 
+  Future<void> updateAmounts(String? value) async {
     if (value != null) {
       await _getExchangeRate(value);
-      setRatio();
+      _secondAmount = _convertFormula(_firstAmount!, ratio);
     }
   }
 
+  Future<void> swapCurrencies() async {
+    final firstSelectedCash = firstSelected;
+    firstSelected = secondSelected;
+    secondSelected = firstSelectedCash;
+    update();
+
+    await updateAmounts(firstSelected);
+    update();
+  }
+
   void setFirstAmount(String value) {
-    final newFirstAmount = double.tryParse(value);
+    _firstAmount = double.tryParse(value);
+    _secondAmount = _firstAmount == null ? null : _convertFormula(_firstAmount!, ratio);
+    update();
+  }
 
-    if (newFirstAmount == null) return;
-
-    firstAmount = value;
-    secondAmount = _convertFormula(double.parse(firstAmount), ratio).toString();
-
+  void setSecondAmount(String value) {
+    _secondAmount = double.tryParse(value);
+    _firstAmount = _secondAmount == null ? null : _convertFormula(_secondAmount!, ratio);
     update();
   }
 

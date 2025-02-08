@@ -15,6 +15,7 @@ class Controller extends GetxController {
   bool get hasNotFailure => _failure == null;
 
   void loadingStarted() {
+    _failure = null;
     _isLoading = true;
     update();
   }
