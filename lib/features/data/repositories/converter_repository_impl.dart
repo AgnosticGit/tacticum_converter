@@ -22,10 +22,11 @@ class ConverterRepositoryImpl implements ConverterRepository {
 
   @override
   Future<Either<Failure, ExchangeRateModel>> exchangeRate(String code, String date) async {
+    code = code.toLowerCase();
+
     try {
       final response = await http.get(Uri.parse(Urls.exchangeRate(code, date)));
       final Map<String, dynamic> json = jsonDecode(response.body);
-
       return Right(ExchangeRateModel.fromJson(code, json));
     } catch (e) {
       return Left(Failure(-1));

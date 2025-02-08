@@ -9,10 +9,12 @@ class ConverterController extends Controller {
 
   List<String> availableCurrencyCodes = [];
   ExchangeRateModel? exchangeRateModel;
+
   String? firstSelected;
   String? secondSelected;
   String firstAmount = '1.0';
-  String secondAmount = '';
+  String secondAmount = '0.0';
+  double ratio = 1.0;
 
   Future<void> loadCurrencyCodes() async {
     loadingStarted();
@@ -23,6 +25,8 @@ class ConverterController extends Controller {
       availableCurrencyCodes = lor.right.map((e) => e.toUpperCase()).toList();
       firstSelected = 'USD';
       secondSelected = 'EUR';
+      await _getExchangeRate(firstSelected!);
+      setRatio();
     } else {
       setFailure(lor.left);
     }
@@ -31,7 +35,7 @@ class ConverterController extends Controller {
   }
 
   Future<void> _getExchangeRate(String code) async {
-    final lor = await converterRepository.exchangeRate(code, "2024-03-06");
+    final lor = await converterRepository.exchangeRate(code, "2025-01-01");
 
     if (lor.isRight) {
       exchangeRateModel = lor.right;
@@ -46,6 +50,7 @@ class ConverterController extends Controller {
 
     if (value != null) {
       await _getExchangeRate(value);
+      setRatio();
     }
   }
 
@@ -55,6 +60,33 @@ class ConverterController extends Controller {
 
     if (value != null) {
       await _getExchangeRate(value);
+      setRatio();
     }
+  }
+
+  void setFirstAmount(String value) {
+    final newFirstAmount = double.tryParse(value);
+
+    if (newFirstAmount == null) return;
+
+    firstAmount = value;
+    secondAmount = _convertFormula(double.parse(firstAmount), ratio).toString();
+
+    update();
+  }
+
+  double _convertFormula(double amount, double ratio) {
+    return amount * ratio;
+  }
+
+  void setRatio() {
+    if (exchangeRateModel == null) return;
+
+    if (exchangeRateModel!.code == firstSelected) {
+      ratio = exchangeRateModel!.rates[secondSelected!.toLowerCase()];
+    } else {
+      ratio = exchangeRateModel!.rates[firstSelected!.toLowerCase()];
+    }
+    update();
   }
 }

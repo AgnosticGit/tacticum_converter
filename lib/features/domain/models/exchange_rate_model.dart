@@ -9,7 +9,7 @@ class ExchangeRateModel {
     final date = DateTime.parse(json['date']);
 
     return ExchangeRateModel(
-      code: code,
+      code: code.toUpperCase(),
       rates: json[code],
       date: date,
     );

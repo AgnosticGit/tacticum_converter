@@ -8,6 +8,8 @@ import 'package:tacticum_converter/features/pages/exchange/widgets/currency_sele
 class Converter extends StatelessWidget {
   const Converter({super.key});
 
+  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -21,20 +23,26 @@ class Converter extends StatelessWidget {
         children: [
           Text('Amount'),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              GetBuilder<ConverterController>(
-                builder: (controller) {
-                  return CurrencySelector(
+          GetBuilder<ConverterController>(
+            builder: (controller) {
+              return Row(
+                children: [
+                  CurrencySelector(
                     selectedCurrency: controller.firstSelected,
                     availableCurrencyCodes: controller.availableCurrencyCodes,
                     onSelected: controller.selectFirstCurrency,
-                  );
-                },
-              ),
-              Spacer(flex: 1),
-              Expanded(flex: 2, child: _AmountTextField()),
-            ],
+                  ),
+                  Spacer(flex: 1),
+                  Expanded(
+                    flex: 2,
+                    child: _AmountTextField(
+                      amount: controller.firstAmount,
+                      onChange: controller.setFirstAmount,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 20),
           Stack(
@@ -47,20 +55,26 @@ class Converter extends StatelessWidget {
           const SizedBox(height: 20),
           Text('Converted Amount'),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              GetBuilder<ConverterController>(
-                builder: (controller) {
-                  return CurrencySelector(
+          GetBuilder<ConverterController>(
+            builder: (controller) {
+              return Row(
+                children: [
+                  CurrencySelector(
                     selectedCurrency: controller.secondSelected,
                     availableCurrencyCodes: controller.availableCurrencyCodes,
                     onSelected: controller.selectSecondCurrency,
-                  );
-                },
-              ),
-              Spacer(flex: 1),
-              Expanded(flex: 2, child: _AmountTextField()),
-            ],
+                  ),
+                  Spacer(flex: 1),
+                  Expanded(
+                    flex: 2,
+                    child: _AmountTextField(
+                      amount: controller.secondAmount,
+                      onChange: controller.setFirstAmount,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -92,7 +106,34 @@ class _ExchangeButton extends StatelessWidget {
   }
 }
 
-class _AmountTextField extends StatelessWidget {
+class _AmountTextField extends StatefulWidget {
+  _AmountTextField({
+    required this.amount,
+    required this.onChange,
+  });
+
+  final String amount;
+  final Function(String value) onChange;
+
+  @override
+  State<_AmountTextField> createState() => _AmountTextFieldState();
+}
+
+class _AmountTextFieldState extends State<_AmountTextField> {
+  final controller = TextEditingController();
+
+  @override
+  void didUpdateWidget(covariant _AmountTextField oldWidget) {
+    if (oldWidget.amount != widget.amount) {
+      controller.value = TextEditingValue(
+        text: widget.amount,
+        selection: TextSelection.collapsed(offset: widget.amount.length),
+      );
+      ;
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -105,6 +146,8 @@ class _AmountTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: TextField(
+          controller: controller,
+          onChanged: widget.onChange,
           textAlign: TextAlign.right,
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d*'))],
           decoration: InputDecoration(border: InputBorder.none),
