@@ -24,7 +24,7 @@ class ExchangeHistoryController extends Controller {
     resetFailure();
     loadingStarted();
 
-    final now = DateTime.now();
+    final now = DateTime.now().subtract(Duration(days: 1));
     final year = now.year;
     final month = now.month;
     final List<Future<Either<Failure, ExchangeRateModel>>> futures = [];
@@ -67,7 +67,7 @@ class ExchangeHistoryController extends Controller {
     if (!hasFailure) {
       rates = resultList;
     }
-
+    print(rates);
     loadingFinished();
   }
 

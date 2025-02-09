@@ -50,8 +50,11 @@ class ConverterController extends Controller {
     resetFailure();
     loadingStarted();
 
-    final now = DateTime.now();
+    // Отнимается один день потому что парсинг данных из API отстает
+    // И может получить так что данные не прийдут
+    final now = DateTime.now().subtract(Duration(days: 1));
     final formattedNow = DateFormat('yyyy-MM-dd').format(now);
+    
 
     final lor = await converterRepository.exchangeRate(first!.code, formattedNow);
 
