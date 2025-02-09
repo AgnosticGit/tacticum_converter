@@ -6,6 +6,7 @@ class AmountTextField extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.onChange,
+    super.key,
   });
 
   final FocusNode focusNode;

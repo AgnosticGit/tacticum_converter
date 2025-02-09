@@ -5,7 +5,6 @@ import 'package:tacticum_converter/features/data/repositories/api/converter_repo
 import 'package:tacticum_converter/features/data/repositories/state/converter_state_repository_impl.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/converter_controller.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/exchange_history_controller.dart';
-import 'package:tacticum_converter/features/domain/repositories/converter_state_repository.dart';
 
 class CurrencyExchangeInjection {
   CurrencyExchangeInjection._();

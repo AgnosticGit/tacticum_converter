@@ -4,7 +4,6 @@ import 'package:tacticum_converter/core/assets/assets.gen.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/converter_controller.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/exchange_history_controller.dart';
 
-import '../../../../core/ui_kit/snackbar_text_message.dart';
 
 class ExchangeButton extends StatelessWidget {
   const ExchangeButton({

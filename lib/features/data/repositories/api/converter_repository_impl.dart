@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:either_dart/src/either.dart';
+import 'package:either_dart/either.dart';
 import 'package:tacticum_converter/core/constants/urls.dart';
 import 'package:tacticum_converter/core/failures/failure.dart';
 import 'package:tacticum_converter/features/domain/models/exchange_rate_model.dart';
