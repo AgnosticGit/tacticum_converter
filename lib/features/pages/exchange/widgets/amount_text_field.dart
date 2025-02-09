@@ -13,7 +13,6 @@ class AmountTextField extends StatelessWidget {
   final TextEditingController controller;
   final Function(String value) onChange;
 
-  // @override
   @override
   Widget build(BuildContext context) {
     return Align(
