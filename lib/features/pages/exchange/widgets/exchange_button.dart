@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tacticum_converter/core/assets/assets.gen.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/converter_controller.dart';
+import 'package:tacticum_converter/features/domain/controllers/converter/exchange_history_controller.dart';
 
 import '../../../../core/ui_kit/snackbar_text_message.dart';
 
@@ -22,11 +23,7 @@ class ExchangeButton extends StatelessWidget {
         padding: EdgeInsets.all(20),
         backgroundColor: Colors.blue[800],
       ),
-      onPressed: () async {
-        final controller = Get.find<ConverterController>();
-        await controller.swapCurrencies();
-        secondFieldController.text = controller.second!.amountString;
-      },
+      onPressed: onPressed,
       child: SizedBox(
         width: 22,
         height: 22,
@@ -46,5 +43,12 @@ class ExchangeButton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void onPressed() async {
+    final controller = Get.find<ConverterController>();
+    await controller.swapCurrencies();
+    secondFieldController.text = controller.second!.amountString;
+    Get.find<ExchangeHistoryController>().loadExchangeHistory();
   }
 }

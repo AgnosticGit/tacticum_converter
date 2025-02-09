@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tacticum_converter/core/ui_kit/snackbar_text_message.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/converter_controller.dart';
+import 'package:tacticum_converter/features/domain/controllers/converter/exchange_history_controller.dart';
 import 'package:tacticum_converter/features/pages/exchange/widgets/currency_selector.dart';
 import 'package:tacticum_converter/features/pages/exchange/widgets/exchange_button.dart';
 import 'amount_text_field.dart';
@@ -41,6 +42,9 @@ class _ConverterState extends State<Converter> {
         continue;
       }
 
+      final exchangeHistoryController = Get.find<ExchangeHistoryController>();
+      await exchangeHistoryController.loadExchangeHistory();
+
       firstFieldController.text = controller.first!.amountString;
       onChangeFirstAmount(controller.first!.amountString);
       break;
@@ -79,6 +83,7 @@ class _ConverterState extends State<Converter> {
                     onSelected: (value) async {
                       await controller.selectFirstCurrency(value);
                       secondFieldController.text = controller.second!.amountString;
+                      await Get.find<ExchangeHistoryController>().loadExchangeHistory();
                     },
                   ),
                   Spacer(flex: 1),
@@ -111,6 +116,7 @@ class _ConverterState extends State<Converter> {
                     onSelected: (value) async {
                       await controller.selectSecondCurrency(value);
                       secondFieldController.text = controller.second!.amountString;
+                      await Get.find<ExchangeHistoryController>().loadExchangeHistory();
                     },
                   ),
                   Spacer(flex: 1),

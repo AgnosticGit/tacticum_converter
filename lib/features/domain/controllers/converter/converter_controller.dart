@@ -1,12 +1,18 @@
+import 'package:intl/intl.dart';
 import 'package:tacticum_converter/features/domain/controllers/abstracts/controller.dart';
 import 'package:tacticum_converter/features/domain/models/exchange_rate_model.dart';
 import 'package:tacticum_converter/features/domain/models/selected_currency_model.dart';
 import 'package:tacticum_converter/features/domain/repositories/converter_repository.dart';
+import 'package:tacticum_converter/features/domain/repositories/converter_state_repository.dart';
 
 class ConverterController extends Controller {
-  ConverterController(this.converterRepository);
+  ConverterController({
+    required this.converterRepository,
+    required this.converterStateRepository,
+  });
 
   final ConverterRepository converterRepository;
+  final ConverterStateRepository converterStateRepository;
 
   List<String> availableCurrencyCodes = [];
   ExchangeRateModel? exchangeRateModel;
@@ -25,6 +31,8 @@ class ConverterController extends Controller {
       availableCurrencyCodes = lor.right.map((e) => e.toUpperCase()).toList();
       first = SelectedCurrencyModel.defaultUSD();
       second = SelectedCurrencyModel.defaultRUB()..amount = _convertFormula(first!.amount!, ratio);
+      _updateSharedState();
+
       await _getExchangeRate();
     } else {
       setFailure(lor.left);
@@ -33,8 +41,18 @@ class ConverterController extends Controller {
     loadingFinished();
   }
 
+  void _updateSharedState() {
+    converterStateRepository.setFirstSelecteCurrency(first);
+    converterStateRepository.setSecondSelecteCurrency(second);
+  }
+
   Future<void> _getExchangeRate() async {
-    final lor = await converterRepository.exchangeRate(first!.code, "2024-05-05");
+    loadingStarted();
+
+    final now = DateTime.now();
+    final formattedNow = DateFormat('yyyy-MM-dd').format(now);
+
+    final lor = await converterRepository.exchangeRate(first!.code, formattedNow);
 
     if (lor.isRight) {
       exchangeRateModel = lor.right;
@@ -42,13 +60,17 @@ class ConverterController extends Controller {
     } else {
       setFailure(lor.left);
     }
+
+    loadingFinished();
   }
 
   Future<void> selectFirstCurrency(String? value) async {
     if (value == null) return;
 
     first!.code = value;
+    _updateSharedState();
     update();
+
     await updateAmounts(first);
   }
 
@@ -56,7 +78,9 @@ class ConverterController extends Controller {
     if (value == null) return;
 
     second!.code = value;
+    _updateSharedState();
     update();
+
     await updateAmounts(second);
   }
 
@@ -64,6 +88,7 @@ class ConverterController extends Controller {
     if (value != null) {
       await _getExchangeRate();
       second!.amount = _convertFormula(first!.amount!, ratio);
+      _updateSharedState();
     }
   }
 
@@ -71,6 +96,7 @@ class ConverterController extends Controller {
     final firstSelectedCopy = first!.code;
     first!.code = second!.code;
     second!.code = firstSelectedCopy;
+    _updateSharedState();
     update();
 
     await updateAmounts(first!);
