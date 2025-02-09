@@ -18,8 +18,11 @@ class $AssetsIconsGen {
   /// File path: assets/icons/exchange.svg
   SvgGenImage get exchange => const SvgGenImage('assets/icons/exchange.svg');
 
+  /// File path: assets/icons/update.svg
+  SvgGenImage get update => const SvgGenImage('assets/icons/update.svg');
+
   /// List of all assets
-  List<SvgGenImage> get values => [exchange];
+  List<SvgGenImage> get values => [exchange, update];
 }
 
 class Assets {

@@ -39,6 +39,7 @@ class _ConverterState extends State<Converter> {
 
       if (controller.hasFailure) {
         SnackbarTextMessage.showError(Get.context!, controller.failure!.message);
+        await Future.delayed(Duration(seconds: 2));
         continue;
       }
 
@@ -47,6 +48,8 @@ class _ConverterState extends State<Converter> {
 
       firstFieldController.text = controller.first!.amountString;
       onChangeFirstAmount(controller.first!.amountString);
+
+      SnackbarTextMessage.clearSnackBars();
       break;
     }
   }

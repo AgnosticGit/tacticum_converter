@@ -16,39 +16,45 @@ class ExchangeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        overlayColor: Colors.white,
-        shape: CircleBorder(),
-        padding: EdgeInsets.all(20),
-        backgroundColor: Colors.blue[800],
-      ),
-      onPressed: onPressed,
-      child: SizedBox(
-        width: 22,
-        height: 22,
-        child: GetBuilder<ConverterController>(
-          builder: (controller) {
-            if (controller.isLoading) {
-              return CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              );
-            }
+    return GetBuilder<ConverterController>(
+      builder: (controller) {
+        return ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            overlayColor: Colors.white,
+            shape: CircleBorder(),
+            padding: EdgeInsets.all(20),
+            backgroundColor: controller.hasFailure ? Colors.red : Colors.blue[800],
+          ),
+          onPressed: onPressed,
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: Builder(
+              builder: (_) {
+                if (controller.isLoading) {
+                  return CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  );
+                }
 
-            return Assets.icons.exchange.svg(
-              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-            );
-          },
-        ),
-      ),
+                return Assets.icons.exchange.svg(
+                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
   void onPressed() async {
-    final controller = Get.find<ConverterController>();
-    await controller.swapCurrencies();
-    secondFieldController.text = controller.second!.amountString;
-    Get.find<ExchangeHistoryController>().loadExchangeHistory();
+    final converterController = Get.find<ConverterController>();
+    final exchangeHistoryController = Get.find<ExchangeHistoryController>();
+
+    await converterController.swapCurrencies();
+    secondFieldController.text = converterController.second!.amountString;
+    exchangeHistoryController.loadExchangeHistory();
   }
 }

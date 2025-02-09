@@ -3,14 +3,9 @@ import 'package:tacticum_converter/features/pages/exchange/widgets/converter.dar
 import 'package:tacticum_converter/features/pages/exchange/widgets/history_line_charts.dart';
 import 'package:tacticum_converter/features/pages/exchange/widgets/range_selector_button.dart';
 
-class ExchangePage extends StatefulWidget {
+class ExchangePage extends StatelessWidget {
   const ExchangePage({super.key});
 
-  @override
-  State<ExchangePage> createState() => _ExchangePageState();
-}
-
-class _ExchangePageState extends State<ExchangePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

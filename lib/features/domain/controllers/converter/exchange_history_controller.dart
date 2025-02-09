@@ -21,6 +21,7 @@ class ExchangeHistoryController extends Controller {
   ExchangeHistoryRange range = ExchangeHistoryRange.month;
 
   Future<void> loadExchangeHistory() async {
+    resetFailure();
     loadingStarted();
 
     final now = DateTime.now();
@@ -70,8 +71,9 @@ class ExchangeHistoryController extends Controller {
     loadingFinished();
   }
 
-  void setRange(ExchangeHistoryRange value){
+  Future<void> setRange(ExchangeHistoryRange value) async {
     range = value;
     update();
+    await loadExchangeHistory();
   }
 }

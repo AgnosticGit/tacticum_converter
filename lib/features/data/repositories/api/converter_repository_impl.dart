@@ -16,7 +16,7 @@ class ConverterRepositoryImpl implements ConverterRepository {
 
       return Right(json.keys.toList());
     } catch (e) {
-      return Left(Failure(-1));
+      return Left(Failure(1000));
     }
   }
 
@@ -29,7 +29,7 @@ class ConverterRepositoryImpl implements ConverterRepository {
       final Map<String, dynamic> json = jsonDecode(response.body);
       return Right(ExchangeRateModel.fromJson(code, json));
     } catch (e) {
-      return Left(Failure(-1));
+      return Left(Failure(1000));
     }
   }
 }

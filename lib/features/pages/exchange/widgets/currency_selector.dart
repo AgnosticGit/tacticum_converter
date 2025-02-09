@@ -39,7 +39,7 @@ class _CurrencySelectorState extends State<CurrencySelector> {
     final currency = Get.find<CurrencyFlags>().currencyByCode(widget.selectedCurrency!);
 
     return DropdownMenu<String>(
-      width: 130,
+      width: 140,
       leadingIcon: Container(
         margin: const EdgeInsets.only(right: 6),
         width: 36,

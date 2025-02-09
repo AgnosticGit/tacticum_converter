@@ -16,13 +16,12 @@ class RangeSelectorButton extends StatelessWidget {
           
           thumbColor: Colors.white,
           groupValue: controller.range,
-          onValueChanged: (ExchangeHistoryRange? value) {
+          onValueChanged: (ExchangeHistoryRange? value)async {
             if (value != null) {
-              controller.setRange(value);
+              await controller.setRange(value);
             }
           },
           children: {
-            ExchangeHistoryRange.week: Text('Week'),
             ExchangeHistoryRange.month: Text('Month'),
             ExchangeHistoryRange.year: Text('Year'),
           },

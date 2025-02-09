@@ -33,7 +33,7 @@ class ConverterController extends Controller {
       second = SelectedCurrencyModel.defaultRUB()..amount = _convertFormula(first!.amount!, ratio);
       _updateSharedState();
 
-      await _getExchangeRate();
+      await getExchangeRate();
     } else {
       setFailure(lor.left);
     }
@@ -46,7 +46,8 @@ class ConverterController extends Controller {
     converterStateRepository.setSecondSelecteCurrency(second);
   }
 
-  Future<void> _getExchangeRate() async {
+  Future<void> getExchangeRate() async {
+    resetFailure();
     loadingStarted();
 
     final now = DateTime.now();
@@ -86,7 +87,7 @@ class ConverterController extends Controller {
 
   Future<void> updateAmounts(SelectedCurrencyModel? value) async {
     if (value != null) {
-      await _getExchangeRate();
+      await getExchangeRate();
       second!.amount = _convertFormula(first!.amount!, ratio);
       _updateSharedState();
     }

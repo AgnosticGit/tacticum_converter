@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tacticum_converter/core/constants/enums.dart';
 import 'package:tacticum_converter/core/constants/time.dart';
+import 'package:tacticum_converter/core/utils/exchange_ratio_shorter.dart';
+import 'package:tacticum_converter/features/domain/controllers/converter/converter_controller.dart';
 import 'package:tacticum_converter/features/domain/controllers/converter/exchange_history_controller.dart';
-import 'package:tacticum_converter/features/domain/models/exchange_rate_model.dart';
 import 'package:tacticum_converter/features/domain/models/rate_model.dart';
 
 class HistoryLineCharts extends StatefulWidget {
@@ -19,93 +20,111 @@ class _HistoryLineChartsState extends State<HistoryLineCharts> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        AspectRatio(
-          aspectRatio: 1.30,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              right: 18,
-              left: 12,
-            ),
-            child: GetBuilder<ExchangeHistoryController>(
-              builder: (controller) {
-                return LineChart(
-                  LineChartData(
-                    gridData: FlGridData(
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          right: 18,
+          left: 12,
+        ),
+        child: GetBuilder<ExchangeHistoryController>(
+          builder: (controller) {
+            return LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: Colors.grey[300],
+                      strokeWidth: 1,
+                    );
+                  },
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      interval: 1,
+                      getTitlesWidget: (val, meta) => bottomTitleWidgets(
+                        val,
+                        meta,
+                        controller.range,
+                      ),
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      // interval: 1,
+                      getTitlesWidget: leftTitleWidgets,
+                      reservedSize: 50,
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                minX: 1,
+                maxX: getMaxX(controller.rates.length, controller.range),
+                minY: 0,
+                maxY: getMaxY(controller.rates),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => Colors.blue[900]!,
+                    getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                      return touchedSpots.map((touchedSpot) {
+                        final secondCurrencyCode = Get.find<ConverterController>().second?.code;
+
+                        return LineTooltipItem(
+                          '${touchedSpot.y} $secondCurrencyCode',
+                          TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: ratesToFlSpots(controller.rates, controller.range),
+                    isCurved: true,
+                    gradient: LinearGradient(
+                      colors: gradientColors,
+                    ),
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
                       show: true,
-                      drawVerticalLine: false,
-                      getDrawingHorizontalLine: (value) {
-                        return FlLine(
-                          color: Colors.grey[300],
-                          strokeWidth: 1,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 3,
+                          color: Colors.grey,
                         );
                       },
                     ),
-                    titlesData: FlTitlesData(
+                    belowBarData: BarAreaData(
                       show: true,
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 30,
-                          interval: 1,
-                          getTitlesWidget: (val, meta) => bottomTitleWidgets(
-                            val,
-                            meta,
-                            controller.range,
-                          ),
-                        ),
-                      ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          // interval: 1,
-                          // getTitlesWidget: leftTitleWidgets,
-                          reservedSize: 42,
-                        ),
+                      gradient: LinearGradient(
+                        colors:
+                            gradientColors.map((color) => color.withValues(alpha: 0.3)).toList(),
                       ),
                     ),
-                    borderData: FlBorderData(show: false),
-                    minX: 0,
-                    maxX: 12,
-                    minY: 0,
-                    maxY: getMaxY(controller.rates),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: ratesToFlSpots(controller.rates, controller.range),
-                        isCurved: true,
-                        gradient: LinearGradient(
-                          colors: gradientColors,
-                        ),
-                        barWidth: 2,
-                        isStrokeCapRound: true,
-                        dotData: const FlDotData(
-                          show: false,
-                          
-                        ),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          gradient: LinearGradient(
-                            colors: gradientColors
-                                .map((color) => color.withValues(alpha: 0.3))
-                                .toList(),
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
-                );
-              },
-            ),
-          ),
+                ],
+              ),
+            );
+          },
         ),
-      ],
+      ),
     );
   }
 
@@ -113,9 +132,11 @@ class _HistoryLineChartsState extends State<HistoryLineCharts> {
     String text = '';
 
     if (range == ExchangeHistoryRange.year) {
- 
+      final currentMonth = DateTime.now().month;
 
-      text = TimeConstants.monthsNames.elementAtOrNull(value.toInt()) ?? '';
+      if (value <= currentMonth) {
+        text = TimeConstants.monthsNames.elementAtOrNull(value.toInt() - 1) ?? '';
+      }
     }
 
     if (range == ExchangeHistoryRange.month) {
@@ -126,33 +147,20 @@ class _HistoryLineChartsState extends State<HistoryLineCharts> {
 
     return SideTitleWidget(
       meta: meta,
-      child: Text(text),
+      child: Text(
+        text,
+        style: TextStyle(color: Colors.grey),
+      ),
     );
   }
 
   Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 15,
+    return Text(
+      shortRatio(value, 2),
+      style: TextStyle(color: Colors.grey),
+      textAlign: TextAlign.left,
+      overflow: TextOverflow.ellipsis,
     );
-
-    String text;
-
-    switch (value.toInt()) {
-      case 1:
-        text = '10K';
-        break;
-      case 3:
-        text = '30k';
-        break;
-      case 5:
-        text = '50k';
-        break;
-      default:
-        return Container();
-    }
-
-    return Text(text, style: style, textAlign: TextAlign.left);
   }
 
   List<FlSpot> ratesToFlSpots(List<RateModel> rates, ExchangeHistoryRange range) {
@@ -179,5 +187,19 @@ class _HistoryLineChartsState extends State<HistoryLineCharts> {
     }
 
     return max * 1.5;
+  }
+
+  double getMaxX(int valuesLength, ExchangeHistoryRange range) {
+    if (range == ExchangeHistoryRange.year) {
+      return valuesLength.toDouble();
+    }
+
+    if (range == ExchangeHistoryRange.month) {
+      if (valuesLength < 15) return valuesLength.toDouble();
+
+      return 15;
+    }
+
+    return valuesLength.toDouble();
   }
 }

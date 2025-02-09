@@ -30,4 +30,6 @@ class SnackbarTextMessage extends StatelessWidget {
       ),
     );
   }
+
+  static void clearSnackBars() => TacticumConverter.snackbarKey.currentState?.clearSnackBars();
 }

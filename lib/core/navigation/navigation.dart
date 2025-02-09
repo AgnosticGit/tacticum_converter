@@ -1,15 +1,10 @@
 import 'package:get/get.dart';
 import 'package:tacticum_converter/features/pages/exchange/exchange_page.dart';
-import 'package:tacticum_converter/features/pages/start/start_page.dart';
 
 class Navigation {
-  static const initial = Routes.start;
+  static const initial = Routes.exchange;
 
   static final List<GetPage> pages = [
-    GetPage(
-      name: Routes.start,
-      page: () => const StartPage(),
-    ),
     GetPage(
       name: Routes.exchange,
       page: () => const ExchangePage(),
@@ -18,6 +13,5 @@ class Navigation {
 }
 
 abstract class Routes {
-  static const start = '/start';
   static const exchange = '/exchange';
 }
