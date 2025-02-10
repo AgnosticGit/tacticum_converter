@@ -67,7 +67,7 @@ class ExchangeHistoryController extends Controller {
     if (!hasFailure) {
       rates = resultList;
     }
-    print(rates);
+
     loadingFinished();
   }
 
