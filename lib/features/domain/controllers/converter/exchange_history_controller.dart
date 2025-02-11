@@ -34,7 +34,7 @@ class ExchangeHistoryController extends Controller {
 
     if (range == ExchangeHistoryRange.year) {
       for (int i = 1; i <= month; i++) {
-        final ix = month < 10 ? '0$i' : i;
+        final ix = i < 10 ? '0$i' : i;
         futures.add(converterRepository.exchangeRate(firstSelected.code, '$year-$ix-01'));
       }
     }
@@ -44,7 +44,7 @@ class ExchangeHistoryController extends Controller {
       final formatedMonth = month < 10 ? '0$month' : month;
 
       for (int i = 1; i <= days; i++) {
-        final ix = days < 10 ? '0$i' : i;
+        final ix = i < 10 ? '0$i' : i;
         futures.add(
           converterRepository.exchangeRate(firstSelected.code, '$year-$formatedMonth-$ix'),
         );
